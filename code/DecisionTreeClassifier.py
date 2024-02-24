@@ -1,21 +1,47 @@
 import logging
-
 import numpy as np
 from graphviz import Digraph
-
 from Node import Node
+from typing import Tuple, List, Union
 
 
 class DecisionTreeClassifier:
+    """
+    A class used to represent a decision tree classifier.
+
+    Attributes:
+
+        max_depth (int): The maximum depth of the tree. If None, the tree will grow until all leaves are pure.
+        min_samples_split (int): The minimum number of samples required to split an internal node.
+        max_features (int): The number of features to consider when looking for the best split. If None, all features are considered.
+        debug (bool): If True, the logging level will be set to DEBUG, providing more detailed logging information.
+        random (np.random.RandomState): A random number generator.
+        root (Node): The root node of the decision tree.
+        _logger (logging.Logger): The logger for the decision tree classifier.
+    """
+
     def __init__(
-        self, max_depth=None, min_samples_split=2, max_features=None, debug=False
-    ):
+        self,
+        max_depth: int = None,
+        min_samples_split: int = 2,
+        max_features: int = None,
+        debug: bool = False,
+    ) -> None:
+        """
+        Initializes the DecisionTreeClassifier with the given parameters.
+
+        Parameters:
+            max_depth (int): The maximum depth of the tree. If None, the tree will grow until all leaves are pure.
+            min_samples_split (int): The minimum number of samples required to split an internal node.
+            max_features (int): The number of features to consider when looking for the best split. If None, all features are considered.
+            debug (bool): If True, the logging level will be set to DEBUG, providing more detailed logging information.
+        """
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.max_features = max_features
 
         self.random = np.random.RandomState(42)
-        self.root = None
+        self.root: Node = None
 
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.setLevel(logging.INFO)
@@ -23,15 +49,33 @@ class DecisionTreeClassifier:
         if debug:
             self._logger.setLevel(logging.DEBUG)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"DecisionTreeClassifier(max_depth={self.max_depth}, min_samples_split={self.min_samples_split}, max_features={self.max_features})"
 
-    def fit(self, X, y):
+    def fit(self, X: np.ndarray, y: np.ndarray) -> None:
+        """
+        Fits the decision tree model to the given dataset.
+
+        Parameters:
+            X (np.ndarray): The input features array.
+            y (np.ndarray): The target values array.
+        """
         self._logger.debug("Starting to fit the model.")
         self.root = self._grow_tree(X, y)
         self._logger.debug("Model fitting completed.")
 
-    def _grow_tree(self, X, y, depth=0):
+    def _grow_tree(self, X: np.ndarray, y: np.ndarray, depth: int = 0) -> Node:
+        """
+        Recursively grows the decision tree from the given dataset.
+
+        Parameters:
+            X (np.ndarray): The input features array.
+            y (np.ndarray): The target values array.
+            depth (int): The current depth of the tree.
+
+        Returns:
+            Node: The root node of the grown tree.
+        """
         n_samples, n_features = X.shape
         n_labels = len(np.unique(y))
 
@@ -71,7 +115,20 @@ class DecisionTreeClassifier:
         right = self._grow_tree(X[right_idxs, :], y[right_idxs], depth + 1)
         return Node(best_feat, best_thresh, left, right)
 
-    def _best_criteria(self, X, y, features_idxs):
+    def _best_criteria(
+        self, X: np.ndarray, y: np.ndarray, features_idxs: np.ndarray
+    ) -> Tuple[int, float]:
+        """
+        Finds the best criteria for splitting the dataset.
+
+        Parameters:
+            X (np.ndarray): The input features array.
+            y (np.ndarray): The target values array.
+            features_idxs (np.ndarray): The indices of the features to consider.
+
+        Returns:
+            Tuple[int, float]: The index of the best feature and the best threshold for splitting.
+        """
         best_gain = -1
         split_idx, split_thresh = None, None
 
@@ -93,9 +150,21 @@ class DecisionTreeClassifier:
 
         return split_idx, split_thresh
 
-    def _information_gain(self, y, feature, threshold):
+    def _information_gain(
+        self, y: np.ndarray, feature: np.ndarray, threshold: float
+    ) -> float:
+        """
+        Calculates the information gain of a potential split.
+
+        Parameters:
+            y (np.ndarray): The target values array.
+            feature (np.ndarray): The feature values array.
+            threshold (float): The threshold for splitting.
+
+        Returns:
+            float: The information gain of the split.
+        """
         parent_loss = self._entropy(y)
-        # self._logger.debug(f"Parent loss: {parent_loss}")
 
         left_idxs, right_idxs = self._split(feature, threshold)
         if len(left_idxs) == 0 or len(right_idxs) == 0:
@@ -105,27 +174,54 @@ class DecisionTreeClassifier:
         n_l, n_r = len(left_idxs), len(right_idxs)
         e_l, e_r = self._entropy(y[left_idxs]), self._entropy(y[right_idxs])
 
-        # self._logger.debug(f"Left entropy: {e_l}, Right entropy: {e_r}")
         child_loss = (n_l / n) * e_l + (n_r / n) * e_r
 
         ig = parent_loss - child_loss
 
-        # self._logger.debug(f"Information gain at threshold {threshold}: {ig}")
-
         return ig
 
-    def _entropy(self, y):
+    def _entropy(self, y: np.ndarray) -> float:
+        """
+        Calculates the entropy of a dataset.
+
+        Parameters:
+            y (np.ndarray): The target values array.
+
+        Returns:
+            float: The entropy of the dataset.
+        """
         _, counts = np.unique(y, return_counts=True)
         p = counts / len(y)
         entropy = -np.sum(p * np.log2(p))
         return entropy
 
-    def _split(self, feature, threshold):
+    def _split(
+        self, feature: np.ndarray, threshold: float
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Splits the dataset based on the given feature and threshold.
+
+        Parameters:
+            feature (np.ndarray): The feature values array.
+            threshold (float): The threshold for splitting.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: The indices of the samples in the left and right splits.
+        """
         left_idxs = np.argwhere(feature <= threshold).flatten()
         right_idxs = np.argwhere(feature > threshold).flatten()
         return left_idxs, right_idxs
 
-    def _most_common_label(self, y):
+    def _most_common_label(self, y: np.ndarray) -> int:
+        """
+        Finds the most common label in the dataset.
+
+        Parameters:
+            y (np.ndarray): The target values array.
+
+        Returns:
+            int: The most common label.
+        """
         if len(y) == 0:
             self._logger.warning("No samples to classify. Returning 0.")
             return None
@@ -134,16 +230,44 @@ class DecisionTreeClassifier:
         self._logger.debug(f"Most common label: {common_label}")
         return common_label
 
-    def predict(self, X):
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """
+        Predicts the class labels for the given dataset.
+
+        Parameters:
+            X (np.ndarray): The input features array.
+
+        Returns:
+            np.ndarray: The predicted class labels.
+        """
         self._logger.debug("Starting prediction.")
         predictions = np.array([self._traverse_tree(x, self.root) for x in X])
         self._logger.debug("Prediction completed.")
         return predictions
 
-    def visualize_tree(self, feature_names=None, class_names=None):
+    def visualize_tree(
+        self, feature_names: List[str] = None, class_names: List[str] = None
+    ) -> Digraph:
+        """
+        Visualizes the decision tree.
+
+        Parameters:
+            feature_names (List[str]): The names of the features.
+            class_names (List[str]): The names of the classes.
+
+        Returns:
+            Digraph: A Graphviz Digraph object representing the decision tree.
+        """
         dot = Digraph()
 
-        def add_nodes_edges(node, dot):
+        def add_nodes_edges(node: Node, dot: Digraph) -> None:
+            """
+            Recursively adds nodes and edges to the Graphviz Digraph.
+
+            Parameters:
+                node (Node): The current node in the decision tree.
+                dot (Digraph): The Graphviz Digraph object.
+            """
             if node.is_leaf_node():
                 class_name = class_names[node.value] if class_names else str(node.value)
                 # Color leaf nodes green
@@ -182,7 +306,17 @@ class DecisionTreeClassifier:
         add_nodes_edges(self.root, dot)
         return dot
 
-    def _traverse_tree(self, x, node: Node):
+    def _traverse_tree(self, x: np.ndarray, node: Node) -> Union[int, None]:
+        """
+        Traverses the decision tree to predict the class label for a single sample.
+
+        Parameters:
+            x (np.ndarray): The input features for a single sample.
+            node (Node): The current node in the decision tree.
+
+        Returns:
+            Union[int, None]: The predicted class label, or None if no prediction could be made.
+        """
         if node.is_leaf_node():
             self._logger.debug(f"Reached leaf node. Value: {node.value}")
             return node.value
