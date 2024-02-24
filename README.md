@@ -1,7 +1,8 @@
 # Final Project for MGSC 695: Optimization for Data Science
 
 ## Idea
-TBD
+
+Implementing a Random Forest algorithm from scratch and comparing it to the `sklearn` implementation.
 
 ## Team Members
 
