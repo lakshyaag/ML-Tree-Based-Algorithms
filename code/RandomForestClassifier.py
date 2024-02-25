@@ -4,6 +4,7 @@ from typing import List, Tuple
 import numpy as np
 from DecisionTreeClassifier import DecisionTreeClassifier
 from scipy import stats
+from joblib import Parallel, delayed
 
 logging.getLogger("DecisionTreeClassifier").propagate = False
 
@@ -23,6 +24,8 @@ class RandomForestClassifier:
     - max_features (int, optional): The number of features to consider when looking for the best split. If None, all features are considered.    - min_impurity_decrease (float): A node will be split if this split induces a decrease of the impurity greater than or equal to this value. Default is 0.0.
     - random_state (int): Controls the randomness of the bootstrapping of the samples and the features considered at each split. Default is 42.
     - debug (bool): If True, the logging level will be set to DEBUG, providing more detailed logging information. Default is False.
+    - n_jobs (int): The number of jobs to run in parallel for both fit and predict. Default is -1, which means using all processors.
+    - verbose (int): The verbosity level. Default is 10.
 
     Attributes
     ---------
@@ -46,6 +49,8 @@ class RandomForestClassifier:
         min_impurity_decrease: float = 0.0,
         random_state: int = 42,
         debug: bool = False,
+        n_jobs: int = -1,
+        verbose: int = 20,
     ) -> None:
         """
         Initializes the RandomForestClassifier with the given parameters.
@@ -57,6 +62,9 @@ class RandomForestClassifier:
         self.min_impurity_decrease = min_impurity_decrease
 
         self.debug = debug
+        self.n_jobs = n_jobs
+        self.verbose = verbose
+
         self.oob_score_: float = None
 
         self.random_state = random_state
@@ -89,26 +97,73 @@ class RandomForestClassifier:
 
         oob_indices = np.setdiff1d(np.arange(n_samples), bootstrap_indices)
 
-        return bootstrap_indices, oob_indices
+        return (bootstrap_indices, oob_indices)
 
-    def _calculate_oob_score(self, oob_votes: np.ndarray, y: np.ndarray) -> None:
+    def _train_tree(
+        self, X, y, tree_idx, bootstrap_indices, oob_indices
+    ) -> Tuple[DecisionTreeClassifier, np.ndarray, np.ndarray]:
+        """
+        Fits a single decision tree to a bootstrap sample of the input data.
+
+        Parameters:
+        - X (np.ndarray): The input features array with shape (n_samples, n_features).
+        - y (np.ndarray): The target values array with shape (n_samples,).
+        - tree_idx (int): The index of the tree being trained.
+        - bootstrap_indices (np.ndarray): The indices of the bootstrap sample.
+        - oob_indices (np.ndarray): The indices of the OOB samples.
+
+        Returns:
+        - DecisionTreeClassifier: The trained decision tree.
+        - np.ndarray: The OOB predictions for the tree.
+        - np.ndarray: The indices of the OOB samples.
+        """
+
+        self._logger.debug(f"Fitting tree {tree_idx + 1}...")
+
+        X_bootstrap, y_bootstrap = X[bootstrap_indices], y[bootstrap_indices]
+
+        tree = DecisionTreeClassifier(
+            max_depth=self.max_depth,
+            min_samples_split=self.min_samples_split,
+            max_features=self.max_features,
+            min_impurity_decrease=self.min_impurity_decrease,
+            random_state=self.random_state,
+            debug=self.debug,
+        )
+
+        tree.fit(X_bootstrap, y_bootstrap)
+
+        oob_pred = (
+            tree.predict(X[oob_indices])
+            if len(X[oob_indices]) > 0
+            else np.array([], dtype=int)
+        )
+
+        self._logger.debug(
+            f"OOB score for tree {tree_idx + 1}: {np.mean(oob_pred == y[oob_indices])}"
+        )
+
+        return tree, oob_pred, oob_indices
+
+    def _calculate_oob_score(self, y: np.ndarray) -> None:
         """
         Calculates the Out-of-Bag (OOB) score based on the aggregated OOB predictions.
 
         The OOB score is an estimate of the model's performance on unseen data, calculated as the accuracy of predictions for samples that were not included in the bootstrap sample for each tree.
 
         Parameters:
-        - oob_votes (np.ndarray): An array with shape (n_samples, n_classes) containing the vote count for each class, for each sample.
         - y (np.ndarray): The true target values array with shape (n_samples,).
 
         Updates:
         - self.oob_score_ (float): The calculated OOB score is stored in this attribute.
         """
 
-        oob_samples_received_vote = np.sum(oob_votes, axis=1) > 0
-        if np.any(oob_samples_received_vote):
-            oob_predictions = np.argmax(oob_votes[oob_samples_received_vote], axis=1)
-            self.oob_score_ = np.mean(oob_predictions == y[oob_samples_received_vote])
+        oob_mask = np.sum(self.oob_votes, axis=1) > 0
+
+        if np.any(oob_mask):
+            oob_predictions = np.argmax(self.oob_votes[oob_mask], axis=1)
+
+            self.oob_score_ = np.mean(oob_predictions == y[oob_mask])
 
             self._logger.debug(f"OOB Score: {self.oob_score_}")
 
@@ -126,37 +181,22 @@ class RandomForestClassifier:
 
         n_samples, n_features = X.shape
         self.max_features = self.max_features or int(np.sqrt(n_features))
-
-        oob_votes = np.zeros((n_samples, np.max(y) + 1))
+        self.oob_votes = np.zeros((n_samples, np.max(y) + 1))
 
         self._logger.debug(f"Fitting {self.n_estimators} trees...")
-        for i in range(self.n_estimators):
-            self._logger.debug(f"Fitting tree {i + 1}...")
-            bootstrap_indices, oob_indices = self._bootstrap_sample(X, y)
 
-            X_bootstrap, y_bootstrap = X[bootstrap_indices], y[bootstrap_indices]
+        results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+            delayed(self._train_tree)(X, y, i, *self._bootstrap_sample(X, y))
+            for i in range(self.n_estimators)
+        )
 
-            tree = DecisionTreeClassifier(
-                max_depth=self.max_depth,
-                min_samples_split=self.min_samples_split,
-                max_features=self.max_features,
-                min_impurity_decrease=self.min_impurity_decrease,
-                random_state=self.random_state,
-                debug=self.debug,
-            )
-
-            tree.fit(X_bootstrap, y_bootstrap)
-
+        for tree, oob_pred, oob_indices in results:
             self.trees.append(tree)
-            self._logger.debug(f"Tree {i + 1} fitted...")
 
-            # Collect OOB predictions for each tree
-            if len(oob_indices) > 0:
-                oob_pred = tree.predict(X[oob_indices])
-                for idx, pred in zip(oob_indices, oob_pred):
-                    oob_votes[idx, pred] += 1
+            for idx, prediction in zip(oob_indices, oob_pred):
+                self.oob_votes[idx, prediction] += 1
 
-        self._calculate_oob_score(oob_votes, y)
+        self._calculate_oob_score(y)
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
