@@ -5,6 +5,8 @@ import numpy as np
 from DecisionTreeClassifier import DecisionTreeClassifier
 from scipy import stats
 
+logging.getLogger("DecisionTreeClassifier").propagate = False
+
 
 class RandomForestClassifier:
     def __init__(
