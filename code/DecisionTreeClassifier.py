@@ -7,19 +7,29 @@ from typing import Tuple, List, Union
 
 class DecisionTreeClassifier:
     """
-    A class used to represent a decision tree classifier.
+    A simple implementation of a decision tree classifier.
 
-    Attributes:
+    This class represents a decision tree for classification tasks.
+    It supports basic functionality such as fitting to a dataset, predicting labels for new data, and visualizing the tree structure.
 
-        max_depth (int): The maximum depth of the tree. If None, the tree will grow until all leaves are pure.
-        min_samples_split (int): The minimum number of samples required to split an internal node.
-        max_features (int): The number of features to consider when looking for the best split. If None, all features are considered.
-        min_impurity_decrease (float): A node will be split if this split induces a decrease of the impurity greater than or equal to this value.
-        random_state (int): The random seed for the random number generator.
-        debug (bool): If True, the logging level will be set to DEBUG, providing more detailed logging information.
-        random (np.random.RandomState): A random number generator.
-        root (Node): The root node of the decision tree.
-        _logger (logging.Logger): The logger for the decision tree classifier.
+    Parameters
+    ----------
+    - max_depth (int, optional): The maximum depth of the tree. If None, the tree will grow until all leaves are pure or until it reaches the minimum samples split.
+    - min_samples_split (int): The minimum number of samples required to split an internal node. Default is 2.
+    - max_features (int, optional): The number of features to consider when looking for the best split. If None, all features are considered.
+    - min_impurity_decrease (float): A node will be split if this split induces a decrease of the impurity greater than or equal to this value. Default is 0.0.
+    - random_state (int): Controls the randomness of the bootstrapping of the samples used when building trees. Default is 42.
+    - debug (bool): If True, the logging level will be set to DEBUG, providing more detailed logging information. Default is False.
+
+    Attributes
+    ----------
+    - root (Node): The root node of the decision tree after fitting.
+
+    Methods
+    -------
+    - fit(X, y): Fits the decision tree model to the given dataset.
+    - predict(X): Predicts the class labels for the given dataset.
+    - visualize_tree(feature_names=None, class_names=None): Generates a visualization of the decision tree using Graphviz.
     """
 
     def __init__(
@@ -32,14 +42,9 @@ class DecisionTreeClassifier:
         debug: bool = False,
     ) -> None:
         """
-        Initializes the DecisionTreeClassifier with the given parameters.
-
-        Parameters:
-            max_depth (int): The maximum depth of the tree. If None, the tree will grow until all leaves are pure.
-            min_samples_split (int): The minimum number of samples required to split an internal node.
-            max_features (int): The number of features to consider when looking for the best split. If None, all features are considered.
-            debug (bool): If True, the logging level will be set to DEBUG, providing more detailed logging information.
+        Initializes the DecisionTreeClassifier with the specified parameters.
         """
+
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.max_features = max_features
