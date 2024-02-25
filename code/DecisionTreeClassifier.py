@@ -14,6 +14,8 @@ class DecisionTreeClassifier:
         max_depth (int): The maximum depth of the tree. If None, the tree will grow until all leaves are pure.
         min_samples_split (int): The minimum number of samples required to split an internal node.
         max_features (int): The number of features to consider when looking for the best split. If None, all features are considered.
+        min_impurity_decrease (float): A node will be split if this split induces a decrease of the impurity greater than or equal to this value.
+        random_state (int): The random seed for the random number generator.
         debug (bool): If True, the logging level will be set to DEBUG, providing more detailed logging information.
         random (np.random.RandomState): A random number generator.
         root (Node): The root node of the decision tree.
@@ -25,6 +27,7 @@ class DecisionTreeClassifier:
         max_depth: int = None,
         min_samples_split: int = 2,
         max_features: int = None,
+        min_impurity_decrease: float = 0.0,
         random_state: int = 42,
         debug: bool = False,
     ) -> None:
@@ -40,6 +43,7 @@ class DecisionTreeClassifier:
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.max_features = max_features
+        self.min_impurity_decrease = min_impurity_decrease
 
         self.random = np.random.RandomState(random_state)
         self.root: Node = None
@@ -97,7 +101,15 @@ class DecisionTreeClassifier:
             features_idxs = np.arange(n_features)
 
         self._logger.debug(f"Considering features: {features_idxs}")
-        best_feat, best_thresh = self._best_criteria(X, y, features_idxs)
+        best_feat, best_thresh, best_gain = self._best_criteria(X, y, features_idxs)
+
+        # Early stopping if no impurity decrease
+        if best_gain < self.min_impurity_decrease:
+            self._logger.debug(
+                f"Early stopping at depth {depth}: No impurity decrease. Creating leaf node with most common label."
+            )
+            leaf_value = self._most_common_label(y)
+            return Node(value=leaf_value)
 
         left_idxs, right_idxs = self._split(X[:, best_feat], best_thresh)
 
@@ -147,7 +159,7 @@ class DecisionTreeClassifier:
             f"Best split found at feature {split_idx} with threshold {split_thresh} and gain {best_gain}"
         )
 
-        return split_idx, split_thresh
+        return split_idx, split_thresh, best_gain
 
     def _information_gain(
         self, y: np.ndarray, feature: np.ndarray, threshold: float

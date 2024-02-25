@@ -13,6 +13,7 @@ class RandomForestClassifier:
         max_depth=None,
         min_samples_split=2,
         max_features=None,
+        min_impurity_decrease=0.0,
         random_state=42,
         debug=False,
     ):
@@ -20,6 +21,8 @@ class RandomForestClassifier:
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.max_features = max_features
+        self.min_impurity_decrease = min_impurity_decrease
+
         self.debug = debug
         self.oob_score_ = None
 
@@ -70,6 +73,7 @@ class RandomForestClassifier:
                 max_depth=self.max_depth,
                 min_samples_split=self.min_samples_split,
                 max_features=self.max_features,
+                min_impurity_decrease=self.min_impurity_decrease,
                 random_state=self.random_state,
                 debug=self.debug,
             )
