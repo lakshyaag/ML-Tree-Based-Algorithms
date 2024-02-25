@@ -7,7 +7,7 @@ from typing import Tuple, List, Union
 
 class DecisionTreeClassifier:
     """
-    A simple implementation of a decision tree classifier.
+    A custom implementation of a decision tree classifier.
 
     This class represents a decision tree for classification tasks.
     It supports basic functionality such as fitting to a dataset, predicting labels for new data, and visualizing the tree structure.
@@ -60,7 +60,16 @@ class DecisionTreeClassifier:
         self._logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
     def __repr__(self) -> str:
-        return f"DecisionTreeClassifier(max_depth={self.max_depth}, min_samples_split={self.min_samples_split}, max_features={self.max_features}, min_impurity_decrease={self.min_impurity_decrease}, is_regression={self.is_regression}), random_state={self.random_state}"
+        return (
+            "DecisionTreeClassifier("
+            f"max_depth={self.max_depth}, "
+            f"min_samples_split={self.min_samples_split}, "
+            f"max_features={self.max_features}, "
+            f"min_impurity_decrease={self.min_impurity_decrease}, "
+            f"is_regression={self.is_regression}, "
+            f"random_state={self.random_state}"
+            ")"
+        )
 
     def _get_leaf_value(self, y: np.ndarray) -> Union[int, float]:
         """

@@ -76,7 +76,16 @@ class RandomForestClassifier:
         self.trees: List[DecisionTreeClassifier] = []
 
     def __repr__(self) -> str:
-        return f"RandomForestClassifier(n_estimators={self.n_estimators}, max_depth={self.max_depth}, min_samples_split={self.min_samples_split}, max_features={self.max_features})"
+        return (
+            "RandomForestClassifier("
+            f"n_estimators={self.n_estimators}, "
+            f"max_depth={self.max_depth}, "
+            f"min_samples_split={self.min_samples_split}, "
+            f"max_features={self.max_features}, "
+            f"min_impurity_decrease={self.min_impurity_decrease}, "
+            f"random_state={self.random_state}"
+            ")"
+        )
 
     def _bootstrap_sample(
         self, X: np.ndarray, y: np.ndarray
