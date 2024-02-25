@@ -25,6 +25,7 @@ class DecisionTreeClassifier:
         max_depth: int = None,
         min_samples_split: int = 2,
         max_features: int = None,
+        random_state: int = 42,
         debug: bool = False,
     ) -> None:
         """
@@ -40,14 +41,11 @@ class DecisionTreeClassifier:
         self.min_samples_split = min_samples_split
         self.max_features = max_features
 
-        self.random = np.random.RandomState(42)
+        self.random = np.random.RandomState(random_state)
         self.root: Node = None
 
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._logger.setLevel(logging.INFO)
-
-        if debug:
-            self._logger.setLevel(logging.DEBUG)
+        self._logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
     def __repr__(self) -> str:
         return f"DecisionTreeClassifier(max_depth={self.max_depth}, min_samples_split={self.min_samples_split}, max_features={self.max_features})"
@@ -98,6 +96,7 @@ class DecisionTreeClassifier:
         else:
             features_idxs = np.arange(n_features)
 
+        self._logger.debug(f"Considering features: {features_idxs}")
         best_feat, best_thresh = self._best_criteria(X, y, features_idxs)
 
         left_idxs, right_idxs = self._split(X[:, best_feat], best_thresh)
@@ -245,6 +244,33 @@ class DecisionTreeClassifier:
         self._logger.debug("Prediction completed.")
         return predictions
 
+    def _traverse_tree(self, x: np.ndarray, node: Node) -> Union[int, None]:
+        """
+        Traverses the decision tree to predict the class label for a single sample.
+
+        Parameters:
+            x (np.ndarray): The input features for a single sample.
+            node (Node): The current node in the decision tree.
+
+        Returns:
+            Union[int, None]: The predicted class label, or None if no prediction could be made.
+        """
+        if node.is_leaf_node():
+            self._logger.debug(f"Reached leaf node. Value: {node.value}")
+            return node.value
+
+        if x[node.feature] <= node.threshold:
+            self._logger.debug(
+                f"Traversing left node. Feature: {node.feature}, Threshold: {node.threshold}"
+            )
+            return self._traverse_tree(x, node.left)
+
+        else:
+            self._logger.debug(
+                f"Traversing right node. Feature: {node.feature}, Threshold: {node.threshold}"
+            )
+            return self._traverse_tree(x, node.right)
+
     def visualize_tree(
         self, feature_names: List[str] = None, class_names: List[str] = None
     ) -> Digraph:
@@ -287,7 +313,7 @@ class DecisionTreeClassifier:
                 # Color decision nodes blue
                 dot.node(
                     str(id(node)),
-                    label=f"{feature_name}\nThreshold {node.threshold:.2f}",
+                    label=f"{feature_name}\ <= {node.threshold:.2f}",
                     shape="box",
                     color="lightblue",
                     style="filled",
@@ -305,30 +331,3 @@ class DecisionTreeClassifier:
 
         add_nodes_edges(self.root, dot)
         return dot
-
-    def _traverse_tree(self, x: np.ndarray, node: Node) -> Union[int, None]:
-        """
-        Traverses the decision tree to predict the class label for a single sample.
-
-        Parameters:
-            x (np.ndarray): The input features for a single sample.
-            node (Node): The current node in the decision tree.
-
-        Returns:
-            Union[int, None]: The predicted class label, or None if no prediction could be made.
-        """
-        if node.is_leaf_node():
-            self._logger.debug(f"Reached leaf node. Value: {node.value}")
-            return node.value
-
-        if x[node.feature] <= node.threshold:
-            self._logger.debug(
-                f"Traversing left node. Feature: {node.feature}, Threshold: {node.threshold}"
-            )
-            return self._traverse_tree(x, node.left)
-
-        else:
-            self._logger.debug(
-                f"Traversing right node. Feature: {node.feature}, Threshold: {node.threshold}"
-            )
-            return self._traverse_tree(x, node.right)
