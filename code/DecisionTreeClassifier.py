@@ -40,6 +40,7 @@ class DecisionTreeClassifier:
         min_impurity_decrease: float = 0.0,
         random_state: int = 42,
         debug: bool = False,
+        is_regression: bool = False,
     ) -> None:
         """
         Initializes the DecisionTreeClassifier with the specified parameters.
@@ -50,26 +51,31 @@ class DecisionTreeClassifier:
         self.max_features = max_features
         self.min_impurity_decrease = min_impurity_decrease
 
-        self.random = np.random.RandomState(random_state)
+        self.random_state = random_state
+        self.random = np.random.RandomState(self.random_state)
         self.root: Node = None
+        self.is_regression = is_regression
 
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
     def __repr__(self) -> str:
-        return f"DecisionTreeClassifier(max_depth={self.max_depth}, min_samples_split={self.min_samples_split}, max_features={self.max_features})"
+        return f"DecisionTreeClassifier(max_depth={self.max_depth}, min_samples_split={self.min_samples_split}, max_features={self.max_features}, min_impurity_decrease={self.min_impurity_decrease}, is_regression={self.is_regression}), random_state={self.random_state}"
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> None:
+    def _get_leaf_value(self, y: np.ndarray) -> Union[int, float]:
         """
-        Fits the decision tree model to the given dataset.
+        Returns the value of the leaf node based on the type of problem.
 
         Parameters:
-            X (np.ndarray): The input features array.
             y (np.ndarray): The target values array.
+
+        Returns:
+            Union[int, float]: The value of the leaf node.
         """
-        self._logger.debug("Starting to fit the model.")
-        self.root = self._grow_tree(X, y)
-        self._logger.debug("Model fitting completed.")
+        if self.is_regression:
+            return np.mean(y)
+        else:
+            return self._most_common_label(y)
 
     def _grow_tree(self, X: np.ndarray, y: np.ndarray, depth: int = 0) -> Node:
         """
@@ -95,7 +101,7 @@ class DecisionTreeClassifier:
             self._logger.debug(
                 f"Reached leaf node. Depth: {depth}, Samples: {n_samples}, Labels: {n_labels}"
             )
-            leaf_value = self._most_common_label(y)
+            leaf_value = self._get_leaf_value(y)
             return Node(value=leaf_value)
 
         if self.max_features is not None:
@@ -113,14 +119,14 @@ class DecisionTreeClassifier:
             self._logger.debug(
                 f"Early stopping at depth {depth}: No impurity decrease. Creating leaf node with most common label."
             )
-            leaf_value = self._most_common_label(y)
+            leaf_value = self._get_leaf_value(y)
             return Node(value=leaf_value)
 
         left_idxs, right_idxs = self._split(X[:, best_feat], best_thresh)
 
         if len(left_idxs) == 0 or len(right_idxs) == 0:
             self._logger.debug("No split possible. Creating leaf node.")
-            leaf_value = self._most_common_label(y)
+            leaf_value = self._get_leaf_value(y)
             return Node(value=leaf_value)
 
         self._logger.debug(
@@ -145,7 +151,7 @@ class DecisionTreeClassifier:
         Returns:
             Tuple[int, float]: The index of the best feature and the best threshold for splitting.
         """
-        best_gain = -1
+        best_gain = -np.inf
         split_idx, split_thresh = None, None
 
         for idx in features_idxs:
@@ -180,7 +186,10 @@ class DecisionTreeClassifier:
         Returns:
             float: The information gain of the split.
         """
-        parent_loss = self._entropy(y)
+        if self.is_regression:
+            parent_loss = self._mse(y, np.full(y.shape, np.mean(y)))
+        else:
+            parent_loss = self._entropy(y)
 
         left_idxs, right_idxs = self._split(feature, threshold)
         if len(left_idxs) == 0 or len(right_idxs) == 0:
@@ -188,13 +197,34 @@ class DecisionTreeClassifier:
 
         n = len(y)
         n_l, n_r = len(left_idxs), len(right_idxs)
-        e_l, e_r = self._entropy(y[left_idxs]), self._entropy(y[right_idxs])
+        y_l, y_r = y[left_idxs], y[right_idxs]
+
+        if self.is_regression:
+            e_l, e_r = (
+                self._mse(y_l, np.full(y_l.shape, np.mean(y_l))),
+                self._mse(y_r, np.full(y_r.shape, np.mean(y_r))),
+            )
+        else:
+            e_l, e_r = self._entropy(y_l), self._entropy(y_r)
 
         child_loss = (n_l / n) * e_l + (n_r / n) * e_r
 
         ig = parent_loss - child_loss
 
         return ig
+
+    def _mse(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """
+        Calculates the mean squared error between the true and predicted values.
+
+        Parameters:
+            y_true (np.ndarray): The true target values.
+            y_pred (np.ndarray): The predicted target values.
+
+        Returns:
+            float: The mean squared error.
+        """
+        return np.mean((y_true - y_pred) ** 2)
 
     def _entropy(self, y: np.ndarray) -> float:
         """
@@ -206,6 +236,7 @@ class DecisionTreeClassifier:
         Returns:
             float: The entropy of the dataset.
         """
+
         _, counts = np.unique(y, return_counts=True)
         p = counts / len(y)
         entropy = -np.sum(p * np.log2(p))
@@ -245,6 +276,18 @@ class DecisionTreeClassifier:
         common_label = np.bincount(y).argmax()
         self._logger.debug(f"Most common label: {common_label}")
         return common_label
+
+    def fit(self, X: np.ndarray, y: np.ndarray) -> None:
+        """
+        Fits the decision tree model to the given dataset.
+
+        Parameters:
+            X (np.ndarray): The input features array.
+            y (np.ndarray): The target values array.
+        """
+        self._logger.debug("Starting to fit the model.")
+        self.root = self._grow_tree(X, y)
+        self._logger.debug("Model fitting completed.")
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
