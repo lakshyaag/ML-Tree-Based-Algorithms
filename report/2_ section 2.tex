@@ -1,0 +1,45 @@
+\graphicspath{{images/}}
+
+\section{Implementation}
+
+The subsequent sections are involved in describing the implementation process for the \textbf{Random Forest} and \textbf{Gradient-Boosting} classifiers,
+as well as the interpretation of their performance in comparison to the available black-box implementations via \textbf{scikit-learn}.
+
+\subsection{A Note on Regularization Parameters}
+
+The following subsections discussing the implementation of the classifiers explain what parameters are associated with them.
+This is very important to understand because Decision Trees make very few assumptions about the training dataset, as compared to linear models that assume the underlying data is linear.
+This implies that decision trees are non-parametric models, since the number of parameters is not determined prior to training.
+
+This lack of constraining the model implies that the tree structure will adapt itself to the training data, most likely overfitting it. In contrast, a parametric model such as a linear model has a pre-determined number of parameters meaning the risk of overfitting is reduced due to the limited degrees of freedom.
+
+Decision Trees can be prevented from overfitting the training data by imposing a set of limitations upon them, called regularization.
+The parameters used to influence this regularization process are called \textbf{regularization parameters}, and are a part of every classifier implemented as part of this project.
+
+\subsection{Decision Tree Implementation}
+
+\textbf{The implementation of this classifier can be found in the \textit{DecisionTreeClassifier.py} file.}
+
+The implementation of the custom implementation of the decision tree classifier was implemented in the \textbf{Object-Oriented} (OO) paradigm using \textbf{Python}. The technical specifics of this classifier implementation can be found in ~\autoref{app:sec:dt_implementation}
+
+
+\subsection{Random Forest Classification Implementation}
+
+\textbf{The implementation of this classifier can be found in the \textit{RandomForestClassifier.py} file.}
+
+Similar to the implementation of the Decision Tree Classifier, the Random Forest Classifier was also implemented using the OO paradigm in Python.
+The class builds a specified number of decision trees, each of which is trained on a bootstrapped sample of the input data. \textbf{For predictions, it aggregates the predictions of all trees using majority voting}. In addition, it also calculates the Out-Of-Bag score as an additional metric to estimate model performance.
+
+The Random Forest Classifier has the same hyperparameters as the Decision Tree Classifier, considering they both involve controlling how much a tree can grow. In addition, it has a few more hyperparameters seen to control the ensemble of trees itself.
+The technical specifics of this classifier implementation can be found in ~\autoref{app:sec:rf_implementation}
+
+\subsection{Gradient Boosting Classification Implementation}
+
+\textbf{The implementation of this classifier can be found in the \textit{GradientBoostingClassifier.py} file.}
+
+Developed under the Object-Oriented (OO) paradigm in Python, this classifier is designed for binary classification tasks, leveraging an ensemble of boosted decision trees.
+The technical specifics of this classifier implementation can be found in ~\autoref{app:sec:gb_implementation}
+
+
+
+
