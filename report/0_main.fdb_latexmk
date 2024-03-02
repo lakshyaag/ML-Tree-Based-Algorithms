@@ -1,18 +1,18 @@
 # Fdb version 4
-["biber 0_main"] 0 "0_main.bcf" "0_main.bbl" "0_main" 1709368297 -1
+["biber 0_main"] 0 "0_main.bcf" "0_main.bbl" "0_main" 1709368703 -1
   "./Sources.bib" 1709367067 1414 47cf3cf72361f7c5eb8d06cd7d6c5efc ""
-  "0_main.bcf" 1709368297 107259 370bef176fdd00f0f350e395bab6b7a8 "pdflatex"
+  "0_main.bcf" 1709368703 107259 370bef176fdd00f0f350e395bab6b7a8 "pdflatex"
   (generated)
   "0_main.bbl"
   "0_main.blg"
   (rewritten before read)
-["pdflatex"] 1709368295 "e:/McGill MMA/Notes/Winter 1 2024/MGSC 695/Assignments/Group Assignment/report/0_main.tex" "0_main.pdf" "0_main" 1709368297 0
-  "0_main.aux" 1709368297 9754 e2e6b21341d6c36fc49a296c1077e7f2 "pdflatex"
+["pdflatex"] 1709368701 "e:/McGill MMA/Notes/Winter 1 2024/MGSC 695/Assignments/Group Assignment/report/0_main.tex" "0_main.pdf" "0_main" 1709368703 0
+  "0_main.aux" 1709368703 9754 e2e6b21341d6c36fc49a296c1077e7f2 "pdflatex"
   "0_main.bbl" 1709367161 6423 acab4eebaebec37ce20216fc7101bb24 "biber 0_main"
-  "0_main.out" 1709368297 6243 9fb24a6767f76349408183c25805ecbb "pdflatex"
-  "0_main.run.xml" 1709368297 2316 5a89914ebaad3ee9c016fb08c9d3061a "pdflatex"
+  "0_main.out" 1709368703 6243 9fb24a6767f76349408183c25805ecbb "pdflatex"
+  "0_main.run.xml" 1709368703 2316 5a89914ebaad3ee9c016fb08c9d3061a "pdflatex"
   "0_main.tex" 1709367434 1200 56e5547ef1f191f7331ddfb3d4484bc9 ""
-  "0_main.toc" 1709368297 3262 035fd722e7c3dba8e44f0af5d0de7f2b "pdflatex"
+  "0_main.toc" 1709368703 3262 035fd722e7c3dba8e44f0af5d0de7f2b "pdflatex"
   "1_ section 1.tex" 1709368291 16809 803c1350b5ff8aca9e6a47eace270971 ""
   "2_ section 2.tex" 1709368225 3356 cf31dd6f98f75c1aa16da5a1057e71e6 ""
   "3_ section 3.tex" 1709366457 7913 9055b7000ba8ee95ea192ab3fda1e3bf ""
@@ -159,11 +159,11 @@
   "c:/Users/Lakshya Agarwal/AppData/Roaming/TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt" 1698636657 6798812 147fe2e4f855e4120359581eff78cb29 ""
   "c:/Users/Lakshya Agarwal/AppData/Roaming/TinyTeX/texmf.cnf" 1698445039 956 c6187f0d6f7083436d9b98fea82e2789 ""
   "e:/McGill MMA/Notes/Winter 1 2024/MGSC 695/Assignments/Group Assignment/report/0_main.tex" 1709367434 1200 56e5547ef1f191f7331ddfb3d4484bc9 ""
-  "headerfooter.tex" 1709380928 242 e3349c1170a66fe7baa7ae4f9a76dac1 ""
+  "headerfooter.tex" 1709368647 240 c0a0fe47121b46623a5efc9675c61ee5 ""
   "images/entropy.png" 1709380928 30184 9835bc68e5b16b16704a6e147302d066 ""
   "images/img-3.png" 1709380928 103820 1329de2853b85177d54b4443b688f270 ""
   "images/mcgill_logo.png" 1709380928 16580 34b740f55f32a0c267736d17681b9069 ""
-  "titlepage.tex" 1709380928 947 aefcc076d61d412fb2d506c5ea2ad6bc ""
+  "titlepage.tex" 1709368700 922 708a40c5a3c420b9eb9209d98b93cd65 ""
   (generated)
   "0_main.aux"
   "0_main.bcf"
