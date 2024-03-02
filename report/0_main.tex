@@ -1,0 +1,57 @@
+\documentclass[12pt]{article}
+
+\usepackage{EngReport}
+\usepackage{etoc}
+\usepackage{setspace}
+\usepackage{biblatex}
+
+\onehalfspacing
+\addbibresource{Sources.bib}
+\graphicspath{{images/}}
+\geometry{letterpaper, portrait, includeheadfoot=true}
+
+%\fontsize{font size}{vertsize (usually 1.2x)}\selectfont
+\usepackage{graphicx} % put this in the preamble
+\usepackage{float}
+\usepackage{geometry}
+\geometry{legalpaper, margin=0.5in}
+\usepackage{booktabs}
+\usepackage[colorlinks,
+    linkcolor={blue!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+]{hyperref}
+\usepackage{chngcntr}
+\usepackage{listings}
+\usepackage{tabularx}
+\usepackage[toc, page]{appendix}
+\usepackage{placeins}
+\onehalfspacing
+\begin{document}
+
+\renewcommand{\familydefault}{\rmdefault}
+
+\input{titlepage}
+\input{headerfooter}
+\thispagestyle{empty}
+\tableofcontents
+\pagebreak
+\clearpage % Start new page
+% Reset page numbering and start from 1
+\pagenumbering{arabic}
+
+
+\fontsize{12}{20}\selectfont{
+
+    \input{1_ section 1}
+    \input{2_ section 2}
+    \input{3_ section 3}
+    \clearpage
+    \input{5_ section 5}
+    \clearpage
+    \input{6_ section 6}
+    \clearpage
+    \input{4_ section 4}
+}
+
+\end{document}
