@@ -196,6 +196,37 @@ Gradient Boosting enhances decision trees through an iterative optimization proc
 The approach involves sequentially fitting \textit{weak learners}, often shallow decision trees, to the residuals of the ensemble's preceding models.
 This iterative refinement systematically minimizes errors, contributing to enhanced predictive accuracy.
 
+\subsubsection{Fitting Subsequent Trees on Residuals}
+
+Let \( \mathcal{D} \) represent the dataset, \( \mathbf{X} \) the feature matrix, \( \mathbf{y} \) the true labels. 
+Given the current model's prediction \( \hat{\mathbf{y}} \), the residuals (\( r \)) are calculated as:
+
+\[ r = \mathbf{y} - \hat{\mathbf{y}} \]
+
+This process can be interpreted through the lens of gradient descent, where the residuals represent the negative gradient of the loss function with respect to the current model's prediction. The subsequent tree is then fitted to approximate this negative gradient, minimizing the loss function.
+
+\subsubsection{Calculation of Residuals using MSE}
+
+The Mean Squared Error (MSE) is utilized to quantify the residuals' discrepancy between the true labels and the current prediction:
+
+\[ \text{MSE} = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2 \]
+
+Where \( N \) is the number of data points, \( y_i \) is the true label, and \( \hat{y}_i \) is the current model's prediction for the \( i \)-th data point.
+
+To control the contribution of each tree to the overall model, a learning rate (\(\eta\)) is introduced. The update to the current model's prediction is then performed as:
+
+\[ \hat{\mathbf{y}} \leftarrow \hat{\mathbf{y}} + \eta \times \text{{Tree}}(\mathbf{X}) \]
+
+Here, \(\text{{Tree}}(\mathbf{X})\) represents the prediction of the fitted tree. The learning rate scales the contribution of each tree, influencing the reduction of residuals and subsequent model refinement.
+
+This iterative process of fitting subsequent trees on residuals, with the incorporation of the learning rate, provides a mechanism for gradual improvement in predictions, contributing to the effectiveness of the gradient boosting algorithm.
+
+\subsubsection{Regularization and Early Stopping}
+
+Regularization techniques, such as controlling tree depth, minimum samples per leaf, or maximum features considered during tree fitting, 
+play a role in preventing overfitting. Early stopping criteria are employed to halt the boosting process when further iterations do not significantly improve model performance, contributing to enhanced generalization.
+
+
 
 \subsubsection{Advantages and Disadvantages of Gradient Boosting}
 The advantages and disadvantages of using gradient boosting are enlisted in ~\autoref{tab:gb_adv}.
