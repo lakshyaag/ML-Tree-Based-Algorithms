@@ -79,7 +79,7 @@
 
   \subsubsection{Pseudocode: How it Works}
 
-  In general, Decision trees are synthesized using the training data available. The decision tree algorithm recursively builds the tree\cite{bhiksha} by:
+  In general, decision trees are synthesized using the training data available. The decision tree algorithm recursively builds the tree \cite{bhiksha} by:
   \begin{itemize}
       \item Step 1: All available observations in the training dataset are assigned to the root node of the tree. The current node is then set to the root node.
       \item Step 2: For every single feature available, training data instances are separated by their values for the associated feature. The information gain is then calculated for this separation or partition.
@@ -89,13 +89,13 @@
       \item Step 6: If a child node contains only instances from a singular class, then mark it as a leaf, and return. If not, set the current node to be this child note and repeat from step two recursively until all options are exhausted.
   \end{itemize}
 
-    A generalized flowchart of such a decision tree classifier is shown below:
+    A generalized flowchart of such a decision tree classifier is shown in ~\autoref{fig:dt_flowchart}:
 
     \begin{figure}[H]
     \centering
     \includegraphics[width=0.65\textwidth]{images/id3-dt.png}
     \caption{Training a Decision Tree}
-    \label{fig:dt}
+    \label{fig:dt_flowchart}
     \end{figure}
     \FloatBarrier
 
@@ -178,18 +178,19 @@
         \item Step 2: For each new observation, make a prediction by aggregating the predictions from all the trees in the Random Forest (e.g., majority vote for classification or averaging for regression).
     \end{itemize}
 
-    This is summarized visually in the image shown below:
-
+    This is summarized visually in ~\autoref{fig:rf_flowchart}:
+    
     \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.65\textwidth]{images/rf_train.png}
-    \caption{Illustration of training a Random Forest Model. Source: Wikipedia}
-    \label{fig:rf}
+      \centering
+      \includegraphics[width=0.65\textwidth]{images/rf_train.png}
+      \caption[Illustration of training a Random Forest Model.]{Illustration of training a Random Forest Model.\protect \footnotemark}
+      \label{fig:rf_flowchart}
     \end{figure}
+    \footnotetext{Source: \href{https://en.wikipedia.org/wiki/Random_forest}{Wikipedia}}
     \FloatBarrier
-
-  \subsection{Gradient Boosting Classification Implementation} \label{app:sec:gb_implementation}
-
+    
+    \subsection{Gradient Boosting Classification Implementation} \label{app:sec:gb_implementation}
+    
   \textbf{The implementation of this classifier can be found in the \textit{GradientBoostingClassifier.py} file attached along with this submission.}
 
   Adhering to the Object-Oriented (OO) paradigm in Python, this classifier is constructed to address binary classification tasks through an ensemble of decision trees.
