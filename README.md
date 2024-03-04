@@ -1,8 +1,8 @@
 # Final Project for MGSC 695: Optimization for Data Science
 
-## Idea
+## Topic
 
-Implementing a Random Forest algorithm from scratch and comparing it to the `sklearn` implementation.
+Implementing Tree-based algorithms from scratch (Decision Tree, Random Forest, and Gradient Boosting) from scratch and comparing it to the `scikit-learn` implementation.
 
 ## Team Members
 
