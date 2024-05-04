@@ -8,6 +8,9 @@ The primary objective of this project is to implement and compare three tree-bas
 
 Tree-based methods are a collection of statistical learning algorithms that can be used for both regression and classification tasks. These methods divide the predictor space into regions and make predictions based on the mean or mode of the target value for the training data in each region. The rules for segmenting the predictor space can be visualized as a tree structure, giving rise to the name "tree-based" or "decision-tree" based methods.
 
+![Tree](./report/images/tree_visualization.png)
+
+
 The individual scripts for each algorithm can be found [here](./code/).
 
 ### The Optimization Problem
